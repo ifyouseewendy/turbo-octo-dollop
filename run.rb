@@ -22,19 +22,28 @@ def load_data(file)
   data.shift
   data = data.map { |l| l.split(",") }
 
-  data.each_with_object({}) do |row, h|
+  map = data.each_with_object({}) do |row, h|
     date = Date.parse(row[0])
     close_price = row[3]
 
     h[date] = close_price
   end
+
+  keys = map.keys
+  max_date = keys.first
+  min_date = keys.last
+  years = ((max_date - min_date).to_i / 365.0).round(1)
+  rate = roi_of(map[min_date], map[max_date], years)
+  puts "Historical ROI:\t#{rate}%\tDate range:\t#{min_date}\t#{max_date}"
+  puts
+
+  map
 end
 
 def calculate_rois(map, range)
   keys = map.keys
   max_date = keys.first
   min_date = keys.last
-  require'pry-byebug';binding.pry
 
   rois = []
   cur = min_date
@@ -82,7 +91,7 @@ map = load_data(ARGV[0])
 # range => [..]
 range_roi = {}
 range_roi[:N] = [:data_point, :avg, :p50, :min, :max, :over_0, :over_2, :over_4, :over_6, :over_8, :over_10]
-(15..30).each do |range|
+(10..15).step(1).each do |range|
   d = analyze(calculate_rois(map, range))
   range_roi[range] = [d.first] + d[1..-1].map { |i| i.nil? ? i : (i / 100.0).round(4) } # remove %
 end
