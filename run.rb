@@ -3,6 +3,10 @@ require "date"
 
 RANGE = 10 # years
 
+def rate_of(a, b)
+  (a * 100.0 / b).round(2)
+end
+
 # a*(1+x)**years = b
 def roi_of(a, b, years)
   (((b.to_f * 1.0 / a.to_f)**(1.0/years) - 1) * 100).round(2)
@@ -32,7 +36,6 @@ min_date = keys.last
 rois = []
 cur = min_date
 loop do
-  puts cur
   tar = cur + RANGE * 365
   break if tar > max_date
 
@@ -45,10 +48,17 @@ loop do
 
   cur += 1
 end
-rois = rois.sort
+
 avg = avg_of(rois)
+rois = rois.sort
 min = rois.first || 0
 max = rois.last || 0
+p50 = rois[rois.count/2]
 
-puts "#{RANGE} years ROI:"
-puts "avg: #{avg}, min: #{min}, max: #{max}"
+puts "== #{RANGE} years ROI"
+puts "avg: #{avg}%, p50: #{p50}%, min: #{min}%, max: #{max}%"
+
+[0, 2, 4, 6, 8, 10].each do |i|
+  r = rate_of(rois.find_index { |n| n >= i }, rois.count)
+  puts "Over #{i}%: #{(100 - r).round(2)}%"
+end
