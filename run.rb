@@ -34,13 +34,13 @@ def calculate_rois(map, range)
   keys = map.keys
   max_date = keys.first
   min_date = keys.last
+  require'pry-byebug';binding.pry
 
   rois = []
   cur = min_date
   loop do
     tar = cur + range * 365
     break if tar > max_date
-
     cur_value = map[cur]
     tar_value = map[tar]
     if cur_value && tar_value
@@ -56,6 +56,10 @@ end
 
 # ROI = Struct.new(:count, :avg, :p50, :min, :max, :over_0, :over_2, :over_4, :over_6, :over_8, :over_10)
 def analyze(rois)
+  if rois.empty?
+    return [0] + [nil]*10
+  end
+
   rois = rois.sort
 
   ret = []
@@ -69,7 +73,6 @@ def analyze(rois)
     r = rate_of(rois.find_index { |n| n >= i }, rois.count)
     ret << (100-r).round(2)
   end
-
   ret
 end
 
@@ -79,9 +82,9 @@ map = load_data(ARGV[0])
 # range => [..]
 range_roi = {}
 range_roi[:N] = [:data_point, :avg, :p50, :min, :max, :over_0, :over_2, :over_4, :over_6, :over_8, :over_10]
-(10..15).each do |range|
+(15..30).each do |range|
   d = analyze(calculate_rois(map, range))
-  range_roi[range] = [d.first] + d[1..-1].map { |i| (i / 100.0).round(4) } # remove %
+  range_roi[range] = [d.first] + d[1..-1].map { |i| i.nil? ? i : (i / 100.0).round(4) } # remove %
 end
 
 view = [range_roi.keys] + range_roi.values.transpose
