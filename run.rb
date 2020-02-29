@@ -3,7 +3,7 @@ require "date"
 
 # %
 def rate_of(a, b)
-  (a * 100.0 / b).round(2)
+  (a.to_i * 100.0 / b).round(2)
 end
 
 # %
